@@ -4072,17 +4072,20 @@ public class IMAPFolder extends Folder implements UIDFolder, ResponseHandler {
 			eu.faircode.email.Log.w("Sequence=" + seqnum);
 			return null;
 		}
-	if (seqnum > messageCache.size()) {
+	IMAPMessage lastmsg = (realTotal < 1 || realTotal > messageCache.size() ? null : messageCache.getMessage(realTotal));
+	int lastseq = (lastmsg == null ? 0 : lastmsg.getSequenceNumber());
+	if (seqnum > lastseq) {
 	    // Microsoft Exchange will sometimes return message
 	    // numbers that it has not yet notified the client
 	    // about via EXISTS; ignore those messages here.
 	    // GoDaddy IMAP does this too.
 	    // Mailfence
+	    // Yahoo when > 10,000 messages
 	    if (logger.isLoggable(Level.FINE))
 		logger.fine("ignoring message number " +
 		    seqnum + " outside range " + messageCache.size());
-	    int count = seqnum - messageCache.size();
-	    eu.faircode.email.Log.w("Adding sequence=" + seqnum + " count=" + count);
+	    int count = seqnum - lastseq;
+	    eu.faircode.email.Log.w("Adding sequence=" + seqnum + " count=" + count + " total=" + realTotal);
 	    messageCache.addMessages(count, seqnum - count + 1);
 	    //return null;
 	}
